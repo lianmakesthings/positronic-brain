@@ -25,35 +25,6 @@ function cartesianProduct(a) { // a = array of array
     return o;
 }
 
-function save(dataPoint) {
-    var dbName = "positronic-brain";
-    var viewUrl = "_design/team_data/_view/by_date_and_team";
-    var queryOptions = {
-        key: [dataPoint.date, dataPoint.team]
-    };
-
-    couch.get(dbName, viewUrl, queryOptions, function (err, resData) {
-        if (err) { return console.error(err); }
-
-        if (0 === resData.data.rows.length) {
-            couch.insert(dbName, dataPoint, function (err, resData) {
-                if (err) { return console.error(err); }
-            });
-        } else {
-            var doc = resData.data.rows[0].value;
-            dataPoint._id = doc._id;
-            dataPoint._rev = doc._rev;
-
-            couch.update(dbName, dataPoint, function (err, resData) {
-                if (err)
-                    return console.error(err);
-
-                console.dir(resData);
-            });
-        }
-    });
-}
-
 var dates = [];
 
 var years = ['2016'];
