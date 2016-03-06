@@ -40,8 +40,17 @@ function save(dataPoint) {
             couch.insert(dbName, dataPoint, function (err, resData) {
                 if (err)
                     return console.error(err);
+            });
+        } else {
+            var doc = resData.data.rows[0].value;
+            dataPoint._id = doc._id;
+            dataPoint._rev = doc._rev;
 
-                console.log(resData);
+            couch.update(dbName, dataPoint, function (err, resData) {
+                if (err)
+                    return console.error(err);
+
+                console.dir(resData);
             });
         }
     });
@@ -70,6 +79,7 @@ async.map(dates, function (date, next) {
                 date: date,
                 team: el.attr('title'),
                 marketValue: parseFloat(el.text().replace(',', '.'), 10),
+                league: 1
             };
             save(dataPoint);
         });
