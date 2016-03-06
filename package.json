@@ -1,0 +1,13 @@
+{
+  "name": "positronic-brain",
+  "version": "0.0.1",
+  "description": "a machine that learns to predict football scores",
+  "main": "src/main.js",
+  "author": "Chimney42",
+  "dependencies": {
+    "node-couchdb": "~0.4.0",
+    "async": "~1.5.2",
+    "request": "~2.69.0",
+    "cheerio": "~0.20.0"
+  }
+}
