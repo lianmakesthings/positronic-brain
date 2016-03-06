@@ -33,13 +33,11 @@ function save(dataPoint) {
     };
 
     couch.get(dbName, viewUrl, queryOptions, function (err, resData) {
-        if (err)
-            return console.error(err);
+        if (err) { return console.error(err); }
 
         if (0 === resData.data.rows.length) {
             couch.insert(dbName, dataPoint, function (err, resData) {
-                if (err)
-                    return console.error(err);
+                if (err) { return console.error(err); }
             });
         } else {
             var doc = resData.data.rows[0].value;
