@@ -31,6 +31,7 @@ module.exports = {
                     var dataPoint = {
                         date: date,
                         team: el.attr('title'),
+                        transfermarktId: el.attr('id'),
                         marketValue: parseFloat(el.text().replace(',', '.'), 10),
                         league: 1
                     };
