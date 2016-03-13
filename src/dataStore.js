@@ -52,6 +52,35 @@ module.exports = {
         });
 
         return deferred.promise;
+    },
 
+    getAllDataSets: function () {
+        var viewUrl = "_design/list/_view/match_data";
+        var deferred = when.defer();
+
+        couch.get(dbName, viewUrl, function (err, resData) {
+            if (err) { deferred.reject(console.error(err)); }
+
+            deferred.resolve(resData.data.rows.map(function (item) {
+                return item.value;
+            }));
+        });
+
+        return deferred.promise;
+    },
+
+    getMissingScores: function () {
+        var viewUrl = "_design/list/_view/matches_missing_scores";
+        var deferred = when.defer();
+
+        couch.get(dbName, viewUrl, function (err, resData) {
+            if (err) { deferred.reject(console.error(err)); }
+
+            deferred.resolve(resData.data.rows.map(function (item) {
+                return item.value;
+            }));
+        });
+
+        return deferred.promise;
     }
 };
