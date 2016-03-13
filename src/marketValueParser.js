@@ -3,41 +3,39 @@ var async = require('async');
 var format = require('util').format;
 var cheerio = require('cheerio');
 var store = require('./dataStore');
-var cartesianProduct = require('./helpers').cartesianProduct;
 
 var linkTemplate = 'http://www.transfermarkt.de/1-bundesliga/marktwerteverein/wettbewerb/L1/plus/?stichtag=%s';
 
+var formatDate = function (date) {
+    var parts = date.split('-');
+    parts[2] = Math.min(1, Math.floor(parts[2] / 15)) * 14 + 1;
+    parts[2] = parts[2] === 1 ? '01' : parts[2];
+    date = parts.join('-');
+    return date;
+};
 
 module.exports = {
     run : function() {
-        var dates = [];
+        store.getMissingMarketValues().then(function (data) {
+            async.map(data, function (dataPoint, next) {
+                var date = formatDate(dataPoint.date);
+                var url = format(linkTemplate, date);
 
-        var years = ['2013'];
-        var months = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'];
-        var days = ['01', '15'];
+                request(url, function (err, response, body) {
+                    if (err) throw err;
+                    var $ = cheerio.load(body);
 
-        dates.push.apply(dates, cartesianProduct([years, months, days]));
-        dates = dates.map(function(el) {
-            return el.join('-');
-        });
-
-        async.map(dates, function (date, next) {
-            var url = format(linkTemplate, date);
-            request(url, function (err, response, body) {
-                if (err) throw err;
-                var $ = cheerio.load(body);
-                $('#yw1 tbody tr').each(function() {
-                    var el = $(this).find('td').eq(4).find('a');
-                    var dataPoint = {
-                        date: date,
-                        team: el.attr('title'),
-                        transfermarktId: el.attr('id'),
-                        marketValue: parseFloat(el.text().replace(',', '.'), 10),
-                        league: 1
+                    var getMarketValueFor = function (id) {
+                        return $('#yw1 tbody tr a[id='+id+']').eq(2).text();
                     };
+
+                    dataPoint.home.market_value = getMarketValueFor(dataPoint.home.transfermarkt_id);
+                    dataPoint.away.market_value = getMarketValueFor(dataPoint.away.transfermarkt_id);
+
                     store.save(dataPoint);
+
+                    next(null);
                 });
-                next(null);
             });
         }, function (err) {
             if (err) throw err;

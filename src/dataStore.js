@@ -1,3 +1,4 @@
+var when = require('when');
 var nodeCouchDB = require("node-couchdb");
 var couch = new nodeCouchDB("192.168.99.100", 5984);
 var dbName = "positronic-couch";
@@ -6,9 +7,9 @@ module.exports = {
     save: function (dataPoint) {
         if (dataPoint._id) {
             couch.update(dbName, dataPoint, function (err, resData) {
-                if (err)
-                    return console.error(err);
+                if (err) { return console.error(err); }
             });
+            return;
         }
 
         if (dataPoint.home && dataPoint.away) {
@@ -36,6 +37,21 @@ module.exports = {
                 }
             });
         }
+    },
+
+    getMissingMarketValues: function () {
+        var viewUrl = "_design/list/_view/matches_missing_market_values";
+        var deferred = when.defer();
+
+        couch.get(dbName, viewUrl, function (err, resData) {
+            if (err) { deferred.reject(console.error(err)); }
+
+             deferred.resolve(resData.data.rows.map(function (item) {
+                return item.value;
+            }));
+        });
+
+        return deferred.promise;
 
     }
 };
