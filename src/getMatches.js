@@ -17,7 +17,10 @@ module.exports = {
         dates.push.apply(dates, cartesianProduct([seasons, matchdays]));
 
         async.map(dates, function (date, next) {
-            var url = format(linkTemplate, date[0], date[1]);
+            var season = date[0];
+            var matchday = date[1];
+            var url = format(linkTemplate, season, matchday);
+
             request(url, function (err, response, body) {
                 if (err) throw err;
                 var $ = cheerio.load(body);
@@ -39,12 +42,12 @@ module.exports = {
                         home_name: nameHome,
                         away: idAway,
                         away_name: nameAway,
-                        type: 'match'
+                        matchday: matchday
                     };
                     if ('-' !== scoreHome) data.home_score = scoreHome;
                     if ('-' !== scoreAway) data.away_score = scoreAway;
 
-                    store.saveMatch(data);
+                    store.save(data);
                 });
                 next(null);
             });
