@@ -5,12 +5,7 @@ var dbName = "positronic-couch";
 
 module.exports = {
     save: function (dataPoint) {
-        if (dataPoint._id) {
-            couch.update(dbName, dataPoint, function (err, resData) {
-                if (err) { return console.error(err); }
-            });
-            return;
-        }
+        var deferred = when.defer();
 
         if (dataPoint.home && dataPoint.away) {
             var viewUrl = "_design/list/_view/match_by_date_and_teams";
@@ -24,6 +19,7 @@ module.exports = {
                 if (0 === resData.data.rows.length) {
                     couch.insert(dbName, dataPoint, function (err, resData) {
                         if (err) { return console.error(err); }
+                        deferred.resolve();
                     });
                 } else {
                     var doc = resData.data.rows[0].value;
@@ -31,12 +27,13 @@ module.exports = {
                     dataPoint._rev = doc._rev;
 
                     couch.update(dbName, dataPoint, function (err, resData) {
-                        if (err)
-                            return console.error(err);
+                        if (err) { return console.error(err); }
+                        deferred.resolve();
                     });
                 }
             });
         }
+        return deferred.promise;
     },
 
     getMissingMarketValues: function () {
@@ -71,6 +68,21 @@ module.exports = {
 
     getMissingScores: function () {
         var viewUrl = "_design/list/_view/matches_missing_scores";
+        var deferred = when.defer();
+
+        couch.get(dbName, viewUrl, function (err, resData) {
+            if (err) { deferred.reject(console.error(err)); }
+
+            deferred.resolve(resData.data.rows.map(function (item) {
+                return item.value;
+            }));
+        });
+
+        return deferred.promise;
+    },
+
+    getMissingTeamData: function () {
+        var viewUrl = "_design/list/_view/matches_missing_team_data";
         var deferred = when.defer();
 
         couch.get(dbName, viewUrl, function (err, resData) {

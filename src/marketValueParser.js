@@ -2,6 +2,7 @@ var request = require('request');
 var async = require('async');
 var format = require('util').format;
 var cheerio = require('cheerio');
+var when = require('when');
 var store = require('./dataStore');
 
 var linkTemplate = 'http://www.transfermarkt.de/1-bundesliga/marktwerteverein/wettbewerb/L1/plus/?stichtag=%s';
@@ -16,8 +17,9 @@ var formatDate = function (date) {
 
 module.exports = {
     run : function() {
+        var deferred = when.defer();
         store.getMissingMarketValues().then(function (data) {
-            async.map(data, function (dataPoint, next) {
+            async.mapLimit(data, 50, function (dataPoint, next) {
                 var date = formatDate(dataPoint.date);
                 var url = format(linkTemplate, date);
 
@@ -32,13 +34,16 @@ module.exports = {
                     dataPoint.home.market_value = getMarketValueFor(dataPoint.home.transfermarkt_id);
                     dataPoint.away.market_value = getMarketValueFor(dataPoint.away.transfermarkt_id);
 
-                    store.save(dataPoint);
-
-                    next(null);
+                    store.save(dataPoint).then(function () {
+                        next(null);
+                    });
                 });
+            }, function (err) {
+                if (err) throw err;
+                console.log('Finished getting market values!');
+                deferred.resolve();
             });
-        }, function (err) {
-            if (err) throw err;
         });
+        return deferred.promise;
     }
 };
