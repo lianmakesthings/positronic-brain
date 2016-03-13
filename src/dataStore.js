@@ -3,6 +3,20 @@ var nodeCouchDB = require("node-couchdb");
 var couch = new nodeCouchDB("192.168.99.100", 5984);
 var dbName = "positronic-couch";
 
+var mergeDataPoints = function (savedData, newData) {
+    var dataPoint = savedData;
+
+    for (var property in newData) {
+        if (newData[property] instanceof Object) {
+            newData[property] = mergeDataPoints(savedData[property], newData[property]);
+        }
+
+        dataPoint[property] = newData[property];
+    }
+
+    return dataPoint;
+};
+
 module.exports = {
     save: function (dataPoint) {
         var deferred = when.defer();
@@ -23,8 +37,7 @@ module.exports = {
                     });
                 } else {
                     var doc = resData.data.rows[0].value;
-                    dataPoint._id = doc._id;
-                    dataPoint._rev = doc._rev;
+                    dataPoint = mergeDataPoints(doc, dataPoint);
 
                     couch.update(dbName, dataPoint, function (err, resData) {
                         if (err) { return console.error(err); }
