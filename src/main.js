@@ -1,5 +1,5 @@
 var marketValueParser = require('./marketValueParser');
-var matchParser = require('./getMatches');
+var matchParser = require('./matchParser');
 var synaptic = require('synaptic');
 var Trainer = synaptic.Trainer;
 var Architect = synaptic.Architect;
