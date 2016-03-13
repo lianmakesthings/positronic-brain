@@ -24,10 +24,16 @@ module.exports = {
                 couch.update(dbName, dataPoint, function (err, resData) {
                     if (err)
                         return console.error(err);
-
-                    console.dir(resData);
                 });
             }
+        });
+    },
+    saveMatch: function (match) {
+        var dbName = "positronic-couch";
+        var viewUrl = "_design/list/_view/team_data_by_date";
+
+        couch.insert(dbName, match, function (err, resData) {
+            if (err) { return console.error(err); }
         });
     }
 };
