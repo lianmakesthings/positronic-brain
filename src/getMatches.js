@@ -38,14 +38,18 @@ module.exports = {
                     var scoreAway = $(this).find('td').eq(6).find('a').text().trim().split(':')[1];
                     var data = {
                         date: date,
-                        home: idHome,
-                        home_name: nameHome,
-                        away: idAway,
-                        away_name: nameAway,
-                        matchday: matchday
+                        matchday: matchday,
+                        home: {
+                            transfermarkt_id: idHome,
+                            name: nameHome
+                        },
+                        away : {
+                            transfermarkt_id: idAway,
+                            name: nameAway
+                        }
                     };
-                    if ('-' !== scoreHome) data.home_score = scoreHome;
-                    if ('-' !== scoreAway) data.away_score = scoreAway;
+                    if ('-' !== scoreHome) data.home.score = scoreHome;
+                    if ('-' !== scoreAway) data.away.score = scoreAway;
 
                     store.save(data);
                 });
