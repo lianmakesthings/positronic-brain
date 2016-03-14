@@ -15,11 +15,17 @@ var formatDate = function (date) {
     return date;
 };
 
+var getMarketValueFor = function (el) {
+    return el.eq(2).text();
+};
+
+
+
 module.exports = {
     run : function() {
         var deferred = when.defer();
         store.getMissingMarketValues().then(function (data) {
-            async.mapLimit(data, 50, function (dataPoint, next) {
+            async.mapLimit(data, 5, function (dataPoint, next) {
                 var date = formatDate(dataPoint.date);
                 var url = format(linkTemplate, date);
 
@@ -27,12 +33,17 @@ module.exports = {
                     if (err) throw err;
                     var $ = cheerio.load(body);
 
-                    var getMarketValueFor = function (id) {
-                        return $('#yw1 tbody tr a[id='+id+']').eq(2).text();
-                    };
+                    var selector = '#yw1 tbody tr a[id=%d]';
 
-                    dataPoint.home.market_value = getMarketValueFor(dataPoint.home.transfermarkt_id);
-                    dataPoint.away.market_value = getMarketValueFor(dataPoint.away.transfermarkt_id);
+                    var valueHome = getMarketValueFor($(format(selector, dataPoint.home.transfermarkt_id)));
+                    var valueAway = getMarketValueFor($(format(selector, dataPoint.away.transfermarkt_id)));
+
+                    if ('-' !== valueHome) {
+                        dataPoint.home.market_value = valueHome;
+                    };
+                    if ('-' !== valueAway) {
+                        dataPoint.away.market_value = valueAway;
+                    };
 
                     store.save(dataPoint).then(function () {
                         next(null);

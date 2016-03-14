@@ -11,7 +11,7 @@ module.exports = {
     run : function() {
         var deferred = when.defer();
         store.getMissingTeamData().then(function (data) {
-            async.mapLimit(data, 50, function (dataPoint, next) {
+            async.mapLimit(data, 5, function (dataPoint, next) {
                 var url = format(linkTemplate, dataPoint.date);
 
                 request(url, function (err, response, body) {

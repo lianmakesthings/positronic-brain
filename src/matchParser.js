@@ -16,11 +16,14 @@ module.exports = {
         var dates = [];
 
         var seasons = ['2015'];
-        var matchdays = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10']//, '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'];
+        var matchdays = [
+            '01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12', '13', '14', '15', '16', '17',
+            '18', '19', '20', '21', '22', '23', '24', '25', '26', '27', '28'//, '29', '30', '31', '32', '33', '34'
+        ];
 
         dates.push.apply(dates, cartesianProduct([seasons, matchdays]));
 
-        async.map(dates, function (date, next) {
+        async.mapLimit(dates, 5, function (date, next) {
             var season = date[0];
             var matchday = date[1];
             var url = format(linkTemplate, season, matchday);

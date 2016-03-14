@@ -1,7 +1,13 @@
 var when = require('when');
 var nodeCouchDB = require("node-couchdb");
-var couch = new nodeCouchDB("192.168.99.100", 5984);
+var couch = new nodeCouchDB("localhost", 8000);
 var dbName = "positronic-couch";
+
+var pad = function(n, width, z) {
+    z = z || '0';
+    n = n + '';
+    return n.length >= width ? n : new Array(width - n.length + 1).join(z) + n;
+};
 
 var mergeDataPoints = function (savedData, newData) {
     var dataPoint = savedData;
@@ -49,6 +55,26 @@ module.exports = {
         return deferred.promise;
     },
 
+    getLastCompletedMatchForTeam: function (teamId) {
+        var deferred = when.defer();
+        var viewUrl = "_design/list/_view/match_by_team_and_date";
+        var d = new Date();
+        var date = d.getFullYear()+'-'+pad(d.getMonth()+1, 2)+'-'+pad(d.getDate(), 2);
+        var queryOptions = {
+            startkey: [teamId, date],
+            descending: true,
+            limit: 1
+        };
+
+        couch.get(dbName, viewUrl, queryOptions, function (err, resData) {
+            if (err) { return deferred.reject(err); }
+
+            deferred.resolve(resData.data.rows[0].value);
+        });
+
+        return deferred.promise;
+    },
+
     getMissingMarketValues: function () {
         var viewUrl = "_design/list/_view/matches_missing_market_values";
         var deferred = when.defer();
@@ -69,7 +95,7 @@ module.exports = {
         var deferred = when.defer();
 
         couch.get(dbName, viewUrl, function (err, resData) {
-            if (err) { deferred.reject(console.error(err)); }
+            if (err) { console.error(err);deferred.reject(err); }
 
             deferred.resolve(resData.data.rows.map(function (item) {
                 return item.value;
