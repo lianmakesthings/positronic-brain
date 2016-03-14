@@ -18,14 +18,20 @@ matchParser.run().then(function () {
                     var away = when.defer();
                     if (!match.home.market_value) {
                         dataStore.getLastCompletedMatchForTeam(match.home.transfermarkt_id).then(function (last_match) {
-                            home.resolve(last_match.home.market_value);
+                            var mv;
+                            if (match.home.transfermarkt_id === last_match.home.transfermarkt_id) {mv=last_match.home.market_value;};
+                            if (match.home.transfermarkt_id === last_match.away.transfermarkt_id) {mv=last_match.away.market_value;};
+                            home.resolve(mv);
                         });
                     } else {
                         home.resolve(match.home.market_value);
                     }
                     if (!match.away.market_value) {
                         dataStore.getLastCompletedMatchForTeam(match.away.transfermarkt_id).then(function (last_match) {
-                            away.resolve(last_match.away.market_value);
+                            var mv;
+                            if (match.away.transfermarkt_id === last_match.home.transfermarkt_id) {mv=last_match.home.market_value;};
+                            if (match.away.transfermarkt_id === last_match.away.transfermarkt_id) {mv=last_match.away.market_value;};
+                            away.resolve(mv);
                         });
                     } else {
                         away.resolve(match.away.market_value);
@@ -38,7 +44,7 @@ matchParser.run().then(function () {
                     })
                 }, function (err, missingScores) {
                     console.log('Training neural network...');
-                    var network = new Architect.Perceptron(2, 3, 3);
+                    var network = new Architect.Perceptron(4, 6, 3);
                     var trainer = new Trainer(network);
                     store.getAllDataSets().then(function (dataSets) {
                         trainer.train(dataSets, {
@@ -48,12 +54,13 @@ matchParser.run().then(function () {
                                 every: 10000,
                                 do: function (data) {
                                     missingScores.forEach(function (match) {
-                                        console.log(match.home.name, match.away.name, network.activate([
+                                        var activations = [
                                             parseFloat(match.home.market_value.replace(',', '.'), 10),
                                             parseFloat(match.away.market_value.replace(',', '.'), 10),
                                             parseInt(match.home.position),
                                             parseInt(match.away.position)
-                                        ]));
+                                        ];
+                                        console.log(match.home.name, match.away.name, activations, network.activate(activations));
                                     });
                                     console.log("error", data.error, "iterations", data.iterations, "rate", data.rate);
                                 }
