@@ -19,11 +19,19 @@ module.exports = {
                     var $ = cheerio.load(body);
 
                     var getPositionFor = function (id) {
-                        return /\d+/.exec($('tbody tr a[id='+id+']').prev().text()) || /\d+/.exec($('tbody tr a[id='+id+']').next().text()) || [1]
+                        return /\d+/.exec($('tbody tr a[id='+id+']').prev().text()) || /\d+/.exec($('tbody tr a[id='+id+']').next().text()) || [];
                     };
 
-                    dataPoint.home.position = getPositionFor(dataPoint.home.transfermarkt_id)[0];
-                    dataPoint.away.position = getPositionFor(dataPoint.away.transfermarkt_id)[0];
+                    var positionHome = getPositionFor(dataPoint.home.transfermarkt_id)[0];
+                    var positionAway = getPositionFor(dataPoint.away.transfermarkt_id)[0];
+
+                    if (positionHome) {
+                        dataPoint.home.position = positionHome;
+                    };
+
+                    if (positionAway) {
+                        dataPoint.away.position = positionAway;
+                    };
 
                     store.save(dataPoint).then(function () {
                         next(null);

@@ -90,6 +90,24 @@ module.exports = {
         return deferred.promise;
     },
 
+    getLastPositionForTeam: function (teamId) {
+        var deferred = when.defer();
+        var viewUrl = "_design/list/_view/position_by_team_and_date";
+        var queryOptions = {
+            startkey: [teamId, "9999-01-01"],
+            descending: true,
+            limit: 1
+        };
+
+        couch.get(dbName, viewUrl, queryOptions, function (err, resData) {
+            if (err) { return deferred.reject(err); }
+
+            deferred.resolve(resData.data.rows[0].value);
+        });
+
+        return deferred.promise;
+    },
+
     getAllDataSets: function () {
         var viewUrl = "_design/list/_view/match_data";
         var deferred = when.defer();
