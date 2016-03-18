@@ -14,39 +14,58 @@ matchParser.run().then(function () {
         marketValueParser.run().then(function () {
             store.getMissingScores().then(function (matches) {
                 async.mapLimit(matches, 9, function (match, next) {
-                    var home = when.defer();
-                    var away = when.defer();
+                    var homeMV = when.defer();
+                    var awayMV = when.defer();
                     if (!match.home.market_value) {
                         dataStore.getLastCompletedMatchForTeam(match.home.transfermarkt_id).then(function (last_match) {
                             var mv;
                             if (match.home.transfermarkt_id === last_match.home.transfermarkt_id) {mv=last_match.home.market_value;};
                             if (match.home.transfermarkt_id === last_match.away.transfermarkt_id) {mv=last_match.away.market_value;};
-                            home.resolve(mv);
+                            homeMV.resolve(mv);
                         });
                     } else {
-                        home.resolve(match.home.market_value);
+                        homeMV.resolve(match.home.market_value);
                     }
                     if (!match.away.market_value) {
                         dataStore.getLastCompletedMatchForTeam(match.away.transfermarkt_id).then(function (last_match) {
                             var mv;
                             if (match.away.transfermarkt_id === last_match.home.transfermarkt_id) {mv=last_match.home.market_value;};
                             if (match.away.transfermarkt_id === last_match.away.transfermarkt_id) {mv=last_match.away.market_value;};
-                            away.resolve(mv);
+                            awayMV.resolve(mv);
                         });
                     } else {
-                        away.resolve(match.away.market_value);
+                        awayMV.resolve(match.away.market_value);
                     }
 
-                    when.all([home.promise, away.promise]).then(function (mvs) {
-                        match.home.market_value = mvs[0];
-                        match.away.market_value = mvs[1];
+                    var homePosition = when.defer();
+                    var awayPosition = when.defer();
+                    if (!match.home.position) {
+                        dataStore.getLastPositionForTeam(match.home.transfermarkt_id).then(function (last_position) {
+                            homePosition.resolve(last_position);
+                        });
+                    } else {
+                        homePosition.resolve(match.home.position);
+                    }
+                    if (!match.away.position) {
+                        dataStore.getLastPositionForTeam(match.away.transfermarkt_id).then(function (last_position) {
+                            awayPosition.resolve(last_position);
+                        });
+                    } else {
+                        awayPosition.resolve(match.away.position);
+                    }
+
+                    when.all([homeMV.promise, awayMV.promise, homePosition.promise, awayPosition.promise]).then(function (values) {
+                        match.home.market_value = values[0];
+                        match.away.market_value = values[1];
+                        match.home.position = values[2];
+                        match.away.position = values[3];
                         next(null, match);
-                    })
+                    });
                 }, function (err, missingScores) {
                     console.log('Training neural network...');
-                    var network = new Architect.Perceptron(4, 6, 3);
-                    var trainer = new Trainer(network);
                     store.getAllDataSets().then(function (dataSets) {
+                        var network = new Architect.Perceptron(dataSets[0].input.length, 6, 6, 3);
+                        var trainer = new Trainer(network);
                         trainer.train(dataSets, {
                             rate: .0003,
                             iterations: 100000,
@@ -55,21 +74,21 @@ matchParser.run().then(function () {
                                 do: function (data) {
                                     missingScores.forEach(function (match) {
                                         var activations = [
+                                            parseInt(match.matchday, 10),
                                             parseFloat(match.home.market_value.replace(',', '.'), 10),
                                             parseFloat(match.away.market_value.replace(',', '.'), 10),
-                                            parseInt(match.home.position),
-                                            parseInt(match.away.position)
+                                            parseInt(match.home.position, 10),
+                                            parseInt(match.away.position, 10)
                                         ];
                                         console.log(match.home.name, match.away.name, activations, network.activate(activations));
                                     });
                                     console.log("error", data.error, "iterations", data.iterations, "rate", data.rate);
                                 }
                             }
-                        })
-                    })
+                        });
+                    });
                 });
             });
-        })
-    })
+        });
+    });
 });
-
