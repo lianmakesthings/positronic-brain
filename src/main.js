@@ -123,7 +123,11 @@ matchParser.run().then(function () {
                                 case 2:
                                     predictedWinner = 'Away Team wins';
                             }
-                            console.log(match.home.name +' - '+ match.away.name, 'Prediction: '+predictedWinner);
+                            console.log('\n');
+                            console.log(chalk.white.bold(match.home.name +' - '+ match.away.name));
+                            console.log(chalk.white(predictedWinner));
+                            console.log(chalk.white.dim('Activation: '+ activations));
+                            console.log(chalk.white.dim('Prediction: '+ prediction));
                         });
                     });
                 });
