@@ -87,19 +87,18 @@ matchParser.run().then(function () {
 
                                     var errorRate = errors / crossValidationSet.length;
                                     console.log('iteration: ' + data.iterations + ' errorRate: ' + errorRate);
-
-                                    missingScores.forEach(function (match) {
-                                        var activations = [
-                                            parseInt(match.matchday, 10),
-                                            parseFloat(match.home.market_value.replace(',', '.'), 10),
-                                            parseFloat(match.away.market_value.replace(',', '.'), 10),
-                                            parseInt(match.home.position, 10),
-                                            parseInt(match.away.position, 10)
-                                        ];
-                                        console.log(match.home.name, match.away.name, activations, network.activate(activations));
-                                    });
                                 }
                             }
+                        });
+                        missingScores.forEach(function (match) {
+                            var activations = [
+                                parseInt(match.matchday, 10),
+                                parseFloat(match.home.market_value.replace(',', '.'), 10),
+                                parseFloat(match.away.market_value.replace(',', '.'), 10),
+                                parseInt(match.home.position, 10),
+                                parseInt(match.away.position, 10)
+                            ];
+                            console.log(match.home.name +' - '+ match.away.name, activations, network.activate(activations));
                         });
                     });
                 });
