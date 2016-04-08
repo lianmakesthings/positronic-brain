@@ -24,6 +24,18 @@ var mergeDataPoints = function (savedData, newData) {
     return dataPoint;
 };
 
+function shuffle(a) {
+    var j, x, i;
+    for (i = a.length; i; i -= 1) {
+        j = Math.floor(Math.random() * i);
+        x = a[i - 1];
+        a[i - 1] = a[j];
+        a[j] = x;
+    }
+
+    return a;
+}
+
 module.exports = {
     save: function (dataPoint) {
         var deferred = when.defer();
@@ -119,6 +131,15 @@ module.exports = {
             deferred.resolve(resData.data.rows.map(function (item) {
                 return item.value;
             }));
+        });
+
+        return deferred.promise;
+    },
+
+    getAllDataSetsShuffled: function () {
+        var deferred = when.defer();
+        this.getAllDataSets().then(function (dataSets) {
+            deferred.resolve(shuffle(dataSets));
         });
 
         return deferred.promise;

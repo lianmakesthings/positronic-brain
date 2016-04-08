@@ -63,7 +63,7 @@ matchParser.run().then(function () {
                     });
                 }, function (err, missingScores) {
                     console.log('Training neural network...');
-                    store.getAllDataSets().then(function (dataSets) {
+                    store.getAllDataSetsShuffled().then(function (dataSets) {
                         var network = new Architect.Perceptron(dataSets[0].input.length, 6, 6, 3);
                         var trainer = new Trainer(network);
                         trainer.train(dataSets, {
