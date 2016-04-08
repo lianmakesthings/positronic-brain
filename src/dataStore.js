@@ -3,6 +3,7 @@ var nodeCouchDB = require("node-couchdb");
 var couchConfig = require("../data/couchConfig.js");
 var couch = new nodeCouchDB(couchConfig.host, couchConfig.port);
 var dbName = "positronic-couch";
+var shuffle = require('./helpers').shuffle;
 
 var pad = function(n, width, z) {
     z = z || '0';
@@ -23,18 +24,6 @@ var mergeDataPoints = function (savedData, newData) {
 
     return dataPoint;
 };
-
-function shuffle(a) {
-    var j, x, i;
-    for (i = a.length; i; i -= 1) {
-        j = Math.floor(Math.random() * i);
-        x = a[i - 1];
-        a[i - 1] = a[j];
-        a[j] = x;
-    }
-
-    return a;
-}
 
 module.exports = {
     save: function (dataPoint) {
