@@ -9,9 +9,9 @@ var teamDataParser = require('./teamDataParser');
 var dataStore = require('./dataStore');
 var when = require('when');
 
-//matchParser.run().then(function () {
-//    teamDataParser.run().then(function () {
-//        marketValueParser.run().then(function () {
+matchParser.run().then(function () {
+    teamDataParser.run().then(function () {
+        marketValueParser.run().then(function () {
             store.getMissingScores().then(function (matches) {
                 async.mapLimit(matches, 9, function (match, next) {
                     var homeMV = when.defer();
@@ -89,6 +89,6 @@ var when = require('when');
                     });
                 });
             });
-//        });
-//    });
-//});
+        });
+    });
+});
