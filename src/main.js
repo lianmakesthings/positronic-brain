@@ -63,28 +63,42 @@ matchParser.run().then(function () {
                     });
                 }, function (err, missingScores) {
                     console.log('Training neural network...');
-                    store.getAllDataSets().then(function (dataSets) {
+                    store.getAllDataSetsShuffled().then(function (dataSets) {
+                        var threshold = Math.round(dataSets.length / 3 * 2);
+                        var trainingSet = dataSets.splice(0, threshold);
+                        var crossValidationSet = dataSets;
                         var network = new Architect.Perceptron(dataSets[0].input.length, 6, 6, 3);
                         var trainer = new Trainer(network);
-                        trainer.train(dataSets, {
+                        trainer.train(trainingSet, {
                             rate: .0003,
                             iterations: 100000,
                             schedule: {
                                 every: 10000,
                                 do: function (data) {
-                                    missingScores.forEach(function (match) {
-                                        var activations = [
-                                            parseInt(match.matchday, 10),
-                                            parseFloat(match.home.market_value.replace(',', '.'), 10),
-                                            parseFloat(match.away.market_value.replace(',', '.'), 10),
-                                            parseInt(match.home.position, 10),
-                                            parseInt(match.away.position, 10)
-                                        ];
-                                        console.log(match.home.name, match.away.name, activations, network.activate(activations));
+                                    var errors = 0;
+                                    crossValidationSet.forEach(function (dataPoint) {
+                                        var expectedKey = dataPoint.output.indexOf(Math.max.apply(this,dataPoint.output));
+                                        var prediction = network.activate(dataPoint.input);
+                                        var actualKey = prediction.indexOf(Math.max.apply(this, prediction));
+                                        if (expectedKey != actualKey) {
+                                            errors++;
+                                        }
                                     });
-                                    console.log("error", data.error, "iterations", data.iterations, "rate", data.rate);
+
+                                    var errorRate = errors / crossValidationSet.length;
+                                    console.log('iteration: ' + data.iterations + ' errorRate: ' + errorRate);
                                 }
                             }
+                        });
+                        missingScores.forEach(function (match) {
+                            var activations = [
+                                parseInt(match.matchday, 10),
+                                parseFloat(match.home.market_value.replace(',', '.'), 10),
+                                parseFloat(match.away.market_value.replace(',', '.'), 10),
+                                parseInt(match.home.position, 10),
+                                parseInt(match.away.position, 10)
+                            ];
+                            console.log(match.home.name +' - '+ match.away.name, activations, network.activate(activations));
                         });
                     });
                 });

@@ -3,6 +3,7 @@ var nodeCouchDB = require("node-couchdb");
 var couchConfig = require("../data/couchConfig.js");
 var couch = new nodeCouchDB(couchConfig.host, couchConfig.port);
 var dbName = "positronic-couch";
+var shuffle = require('./helpers').shuffle;
 
 var pad = function(n, width, z) {
     z = z || '0';
@@ -119,6 +120,15 @@ module.exports = {
             deferred.resolve(resData.data.rows.map(function (item) {
                 return item.value;
             }));
+        });
+
+        return deferred.promise;
+    },
+
+    getAllDataSetsShuffled: function () {
+        var deferred = when.defer();
+        this.getAllDataSets().then(function (dataSets) {
+            deferred.resolve(shuffle(dataSets));
         });
 
         return deferred.promise;
