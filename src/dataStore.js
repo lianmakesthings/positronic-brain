@@ -1,6 +1,7 @@
 var when = require('when');
 var nodeCouchDB = require("node-couchdb");
-var couch = new nodeCouchDB("localhost", 8000);
+var couchConfig = require("../data/couchConfig.js");
+var couch = new nodeCouchDB(couchConfig.host, couchConfig.port);
 var dbName = "positronic-couch";
 
 var pad = function(n, width, z) {
