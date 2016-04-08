@@ -64,9 +64,12 @@ matchParser.run().then(function () {
                 }, function (err, missingScores) {
                     console.log('Training neural network...');
                     store.getAllDataSetsShuffled().then(function (dataSets) {
+                        var threshold = Math.round((dataSets.length -1) / 3 * 2);
+                        var trainingSet = dataSets.splice(0, threshold);
+                        var crossValidationSet = dataSets;
                         var network = new Architect.Perceptron(dataSets[0].input.length, 6, 6, 3);
                         var trainer = new Trainer(network);
-                        trainer.train(dataSets, {
+                        trainer.train(trainingSet, {
                             rate: .0003,
                             iterations: 100000,
                             schedule: {
