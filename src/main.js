@@ -98,7 +98,7 @@ matchParser.run().then(function () {
                                         errColor = 'red';
                                     }
                                     errBefore = errorRate;
-                                    console.log(chalk.white('Iteration: ' + data.iterations), chalk[errColor]('errorRate: ' + errorRate));
+                                    console.log('Iteration: ' + data.iterations, chalk[errColor]('errorRate: ' + errorRate));
                                 }
                             }
                         });
@@ -124,10 +124,10 @@ matchParser.run().then(function () {
                                     predictedWinner = 'Away Team wins';
                             }
                             console.log('\n');
-                            console.log(chalk.white.bold(match.home.name +' - '+ match.away.name));
-                            console.log(chalk.white(predictedWinner));
-                            console.log(chalk.white.dim('Activation: '+ activations));
-                            console.log(chalk.white.dim('Prediction: '+ prediction));
+                            console.log(chalk.underline.bold(match.home.name +' - '+ match.away.name));
+                            console.log(predictedWinner);
+                            console.log(chalk.dim('Activation: '+ activations));
+                            console.log(chalk.dim('Prediction: '+ prediction));
                         });
                     });
                 });
