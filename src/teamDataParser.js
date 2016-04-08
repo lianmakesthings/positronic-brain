@@ -13,8 +13,14 @@ module.exports = {
         store.getMissingTeamData().then(function (data) {
             async.mapLimit(data, 5, function (dataPoint, next) {
                 var url = format(linkTemplate, dataPoint.date);
+	            var config = {
+	            	url: url,
+	            	headers: {
+	            		'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.110 Safari/537.36'
+		            }
+		        }
 
-                request(url, function (err, response, body) {
+	            request(config, function (err, response, body) {
                     if (err) throw err;
                     var $ = cheerio.load(body);
 
