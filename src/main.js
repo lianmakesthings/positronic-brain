@@ -64,7 +64,7 @@ matchParser.run().then(function () {
                 }, function (err, missingScores) {
                     console.log('Training neural network...');
                     store.getAllDataSetsShuffled().then(function (dataSets) {
-                        var threshold = Math.round((dataSets.length -1) / 3 * 2);
+                        var threshold = Math.round(dataSets.length / 3 * 2);
                         var trainingSet = dataSets.splice(0, threshold);
                         var crossValidationSet = dataSets;
                         var network = new Architect.Perceptron(dataSets[0].input.length, 6, 6, 3);
@@ -98,7 +98,6 @@ matchParser.run().then(function () {
                                         ];
                                         console.log(match.home.name, match.away.name, activations, network.activate(activations));
                                     });
-                                    console.log("error", data.error, "iterations", data.iterations, "rate", data.rate);
                                 }
                             }
                         });
