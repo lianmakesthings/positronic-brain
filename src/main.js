@@ -75,6 +75,19 @@ matchParser.run().then(function () {
                             schedule: {
                                 every: 10000,
                                 do: function (data) {
+                                    var errors = 0;
+                                    crossValidationSet.forEach(function (dataPoint) {
+                                        var expectedKey = dataPoint.output.indexOf(Math.max.apply(this,dataPoint.output));
+                                        var prediction = network.activate(dataPoint.input);
+                                        var actualKey = prediction.indexOf(Math.max.apply(this, prediction));
+                                        if (expectedKey != actualKey) {
+                                            errors++;
+                                        }
+                                    });
+
+                                    var errorRate = errors / crossValidationSet.length;
+                                    console.log('iteration: ' + data.iterations + ' errorRate: ' + errorRate);
+
                                     missingScores.forEach(function (match) {
                                         var activations = [
                                             parseInt(match.matchday, 10),
