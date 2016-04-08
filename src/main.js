@@ -86,7 +86,7 @@ matchParser.run().then(function () {
                                     });
 
                                     var errorRate = errors / crossValidationSet.length;
-                                    console.log('iteration: ' + data.iterations + ' errorRate: ' + errorRate);
+                                    console.log('iteration: ' + data.iterations, 'errorRate: ' + errorRate);
                                 }
                             }
                         });
@@ -98,7 +98,19 @@ matchParser.run().then(function () {
                                 parseInt(match.home.position, 10),
                                 parseInt(match.away.position, 10)
                             ];
-                            console.log(match.home.name +' - '+ match.away.name, activations, network.activate(activations));
+                            var prediction = network.activate(activations);
+                            var predictedWinner = '';
+                            switch (prediction.indexOf(Math.max.apply(this, prediction))) {
+                                case 0:
+                                    predictedWinner = 'Home Team wins';
+                                    break;
+                                case 1:
+                                    predictedWinner = 'Tie';
+                                    break;
+                                case 2:
+                                    predictedWinner = 'Away Team wins';
+                            }
+                            console.log(match.home.name +' - '+ match.away.name, 'Prediction: '+predictedWinner);
                         });
                     });
                 });
