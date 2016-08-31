@@ -13,7 +13,7 @@ matchParser.run().then(function () {
     teamDataParser.run().then(function () {
         marketValueParser.run().then(function () {
             store.getMissingScores().then(function (matches) {
-                async.mapLimit(matches, 9, function (match, next) {
+                async.mapLimit(matches, 5, function (match, next) {
                     var homeMV = when.defer();
                     var awayMV = when.defer();
                     if (!match.home.market_value) {
