@@ -3,6 +3,14 @@ A machine that learns to predict football scores
 
 ## Usage
 
-### Start couchdb container
+### Setup
+Start couchdb container
 
 `docker run -d -p 5984:5984 -v $(pwd):/usr/local/var/lib/couchdb --name positronic-brain-couch couchdb`
+
+Install npm packages
+
+`npm install`
+
+### Run
+`node src/main.js`
