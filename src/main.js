@@ -57,12 +57,12 @@ matchParser.run().then(function () {
                     when.all([homeMV.promise, awayMV.promise, homePosition.promise, awayPosition.promise]).then(function (values) {
                         match.home.market_value = values[0];
                         match.away.market_value = values[1];
-                        match.home.position = values[2];
-                        match.away.position = values[3];
+                        //match.home.position = values[2];
+                        //match.away.position = values[3];
                         next(null, match);
                     });
                 }, function (err, missingScores) {
-                    console.log('Training neural network...');
+                    //console.log('Training neural network...');
                     store.getAllDataSetsShuffled().then(function (dataSets) {
                         var threshold = Math.round(dataSets.length / 3 * 2);
                         var trainingSet = dataSets.splice(0, threshold);
@@ -75,31 +75,44 @@ matchParser.run().then(function () {
                             schedule: {
                                 every: 10000,
                                 do: function (data) {
-                                    var errors = 0;
+                                    var classificationErrors = 0;
+                                    trainingSet.forEach(function (dataPoint) {
+                                        var expectedKey = dataPoint.output.indexOf(Math.max.apply(this,dataPoint.output));
+                                        var prediction = network.activate(dataPoint.input);
+                                        var actualKey = prediction.indexOf(Math.max.apply(this, prediction));
+                                        if (expectedKey != actualKey) {
+                                            classificationErrors++;
+                                        }
+                                    });
+                                    var crossvalidationErrors = 0;
                                     crossValidationSet.forEach(function (dataPoint) {
                                         var expectedKey = dataPoint.output.indexOf(Math.max.apply(this,dataPoint.output));
                                         var prediction = network.activate(dataPoint.input);
                                         var actualKey = prediction.indexOf(Math.max.apply(this, prediction));
                                         if (expectedKey != actualKey) {
-                                            errors++;
+                                            crossvalidationErrors++;
                                         }
                                     });
 
-                                    var errorRate = errors / crossValidationSet.length;
-                                    console.log('iteration: ' + data.iterations + ' errorRate: ' + errorRate);
+                                    var classificationErrorRate = classificationErrors / trainingSet.length;
+                                    var crossvalidationErrorRate = crossvalidationErrors / crossValidationSet.length;
+                                    console.log('data err', data.error, '|',
+                                    'classification err', classificationErrorRate, '|',
+                                    'crossvalidation err', crossvalidationErrorRate
+                                  );
                                 }
                             }
                         });
-                        missingScores.forEach(function (match) {
+                        /*missingScores.forEach(function (match) {
                             var activations = [
-                                parseInt(match.matchday, 10),
+                                //parseInt(match.matchday, 10),
                                 parseFloat(match.home.market_value.replace(',', '.'), 10),
                                 parseFloat(match.away.market_value.replace(',', '.'), 10),
-                                parseInt(match.home.position, 10),
-                                parseInt(match.away.position, 10)
+                                //parseInt(match.home.position, 10),
+                                //parseInt(match.away.position, 10)
                             ];
-                            console.log(match.home.name +' - '+ match.away.name, activations, network.activate(activations));
-                        });
+                            console.log(activations, network.activate(activations));
+                        });*/
                     });
                 });
             });

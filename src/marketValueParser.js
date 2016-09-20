@@ -25,7 +25,7 @@ module.exports = {
     run : function() {
         var deferred = when.defer();
         store.getMissingMarketValues().then(function (data) {
-            async.mapLimit(data, 5, function (dataPoint, next) {
+            async.mapLimit(data, 3, function (dataPoint, next) {
                 var date = formatDate(dataPoint.date);
                 var url = format(linkTemplate, date);
 	            var config = {
