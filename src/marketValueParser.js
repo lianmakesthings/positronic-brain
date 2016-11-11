@@ -44,10 +44,10 @@ module.exports = {
                     var valueHome = getMarketValueFor($(format(selector, dataPoint.home.transfermarkt_id)));
                     var valueAway = getMarketValueFor($(format(selector, dataPoint.away.transfermarkt_id)));
 
-                    if ('-' !== valueHome) {
+                    if ('-' !== valueHome && '' !== valueHome) {
                         dataPoint.home.market_value = valueHome;
                     };
-                    if ('-' !== valueAway) {
+                    if ('-' !== valueAway && '' !== valueAway) {
                         dataPoint.away.market_value = valueAway;
                     };
 
