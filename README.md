@@ -14,7 +14,7 @@ In the current state, the following data is gathered:
 ### Setup
 Start a couchdb on localhost port 5984, e.g. with [docker](https://docker.com/)
 
-`docker run -d -p 5984:5984 -v $(pwd):/usr/local/var/lib/couchdb --name positronic-brain-couch couchdb`
+`docker run -d -p 5984:5984 -v $(pwd)/data:/usr/local/var/lib/couchdb --name positronic-brain-couch couchdb`
 
 Install npm packages
 
