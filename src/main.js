@@ -8,6 +8,7 @@ var matchParser = require('./matchParser');
 var teamDataParser = require('./teamDataParser');
 var dataStore = require('./dataStore');
 var when = require('when');
+var chalk = require('chalk');
 
 matchParser.run().then(function () {
     teamDataParser.run().then(function () {
@@ -69,6 +70,8 @@ matchParser.run().then(function () {
                         var crossValidationSet = dataSets;
                         var network = new Architect.Perceptron(dataSets[0].input.length, 6, 6, 3);
                         var trainer = new Trainer(network);
+
+                        var errBefore = 0;
                         trainer.train(trainingSet, {
                             rate: .0003,
                             iterations: 100000,
@@ -86,10 +89,20 @@ matchParser.run().then(function () {
                                     });
 
                                     var errorRate = errors / crossValidationSet.length;
-                                    console.log('iteration: ' + data.iterations + ' errorRate: ' + errorRate);
+                                    var errColor = '';
+                                    if (errorRate === errBefore || 0 === errBefore) {
+                                        errColor = 'yellow';
+                                    } else if (errorRate < errBefore) {
+                                        errColor = 'green';
+                                    } else {
+                                        errColor = 'red';
+                                    }
+                                    errBefore = errorRate;
+                                    console.log('Iteration: ' + data.iterations, chalk[errColor]('errorRate: ' + errorRate));
                                 }
                             }
                         });
+
                         missingScores.forEach(function (match) {
                             var activations = [
                                 parseInt(match.matchday, 10),
@@ -98,7 +111,23 @@ matchParser.run().then(function () {
                                 parseInt(match.home.position, 10),
                                 parseInt(match.away.position, 10)
                             ];
-                            console.log(match.home.name +' - '+ match.away.name, activations, network.activate(activations));
+                            var prediction = network.activate(activations);
+                            var predictedWinner = '';
+                            switch (prediction.indexOf(Math.max.apply(this, prediction))) {
+                                case 0:
+                                    predictedWinner = 'Home Team wins';
+                                    break;
+                                case 1:
+                                    predictedWinner = 'Tie';
+                                    break;
+                                case 2:
+                                    predictedWinner = 'Away Team wins';
+                            }
+                            console.log('\n');
+                            console.log(chalk.underline.bold(match.home.name +' - '+ match.away.name));
+                            console.log(predictedWinner);
+                            console.log(chalk.dim('Activation: '+ activations));
+                            console.log(chalk.dim('Prediction: '+ prediction));
                         });
                     });
                 });
